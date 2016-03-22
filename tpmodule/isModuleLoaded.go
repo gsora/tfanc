@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 )
 
-func isModuleLoaded() (bool, error) {
+func IsModuleLoaded() error {
 	basePath := "/sys/module/"
 	modList, _ := ioutil.ReadDir(basePath)
 
@@ -19,16 +19,16 @@ func isModuleLoaded() (bool, error) {
 	}
 
 	if found == false {
-		return false, errors.New("thinkpad_acpi error: module not loaded")
+		return errors.New("thinkpad_acpi error: module not loaded")
 	}
 
 	basePath = basePath + "thinkpad_acpi/parameters/"
 	fanControlFile, _ := ioutil.ReadFile(basePath + "fan_control")
 	fanControlFlag := string(fanControlFile)
 
-	if fanControlFlag != "Y" {
-		return true, errors.New("thinkpad_acpi error: module loaded, but not initialized with \"fan_control=1\" parameter")
+	if fanControlFlag == "N" {
+		return errors.New("thinkpad_acpi error: module loaded, but not initialized with \"fan_control=1\" parameter")
 	}
 
-	return true, nil
+	return nil
 }
