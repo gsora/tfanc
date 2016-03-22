@@ -1,10 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/VividCortex/godaemon"
 	"github.com/gsora/tfanc/tpmodule"
 )
 
@@ -12,6 +14,17 @@ import (
 var cFan tpmodule.Fan
 
 func main() {
+	// program parameters
+	benchmark := flag.Bool("benchmark", false, "run all the possible fan levels, 10 seconds at time")
+	foreground := flag.Bool("foreground", false, "don't fork in background, useful for debug purposes")
+	flag.Parse()
+
+	if *foreground == false && *benchmark == false {
+		godaemon.MakeDaemon(&godaemon.DaemonAttr{})
+	} else if *foreground == false && *benchmark == true {
+		fmt.Println("Cannot fork to background while running in benchmark mode.")
+	}
+
 	// check if user running this is root
 	if os.Getuid() != 0 {
 		fmt.Println("This program have to be executed with root rights.")
@@ -21,6 +34,12 @@ func main() {
 	// then check if the kernel module is loaded with fan_control=1, else exit
 	if err := tpmodule.IsModuleLoaded(); err != nil {
 		log.Fatal(err)
+	}
+
+	// if -benchmark passed, run it
+	if *benchmark == true {
+		tpmodule.Benchmark(cFan)
+		return
 	}
 
 	// calm down, golint.
