@@ -19,7 +19,6 @@ type Fan struct {
 
 // Update struct with data from the module
 func (f *Fan) Update() {
-
 	fPointer, _ := os.Open(fanPath)
 	defer fPointer.Close()
 	scanner := bufio.NewScanner(fPointer)
@@ -36,7 +35,6 @@ func (f *Fan) Update() {
 	sp, _ := strconv.Atoi(data[1])
 	f.Speed = sp
 	f.Level = data[2]
-
 }
 
 // ToggleFan toggles the fan between enabled and disabled state
