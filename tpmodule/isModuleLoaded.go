@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 )
 
+// IsModuleLoaded checks if the kernel module is loaded with fan_control=1, else exit
 func IsModuleLoaded() error {
 	basePath := "/sys/module/"
 	modList, _ := ioutil.ReadDir(basePath)
