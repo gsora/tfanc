@@ -25,16 +25,7 @@ func main() {
 		fmt.Println("Cannot fork to background while running in benchmark mode.")
 	}
 
-	// check if user running this is root
-	if os.Getuid() != 0 {
-		fmt.Println("This program have to be executed with root rights.")
-		os.Exit(1)
-	}
-
-	// then check if the kernel module is loaded with fan_control=1, else exit
-	if err := tpmodule.IsModuleLoaded(); err != nil {
-		log.Fatal(err)
-	}
+	securityChecks()
 
 	// if -benchmark passed, run it
 	if *benchmark == true {
@@ -45,4 +36,17 @@ func main() {
 	// calm down, golint.
 	cFan.Update()
 	fmt.Println(cFan.Status)
+}
+
+func securityChecks() {
+	// check if user running this is root
+	if os.Getuid() != 0 {
+		fmt.Println("This program have to be executed with root rights.")
+		os.Exit(1)
+	}
+
+	// then check if the kernel module is loaded with fan_control=1, else exit
+	if err := tpmodule.IsModuleLoaded(); err != nil {
+		log.Fatal(err)
+	}
 }
