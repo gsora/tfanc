@@ -1,7 +1,6 @@
-package main
+package tpmodule
 
 import (
-	"fmt"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -15,8 +14,4 @@ func GetCPUTemp() int {
 	temp := strings.TrimSpace(content[1])
 	k, _ := strconv.Atoi(temp)
 	return k
-}
-
-func main() {
-	fmt.Println(GetCPUTemp())
 }
