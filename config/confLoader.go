@@ -8,8 +8,6 @@ import (
 	"os"
 	"os/user"
 	"sort"
-
-	"github.com/gsora/tfanc/config"
 )
 
 // WARNING: never directly use this variable before calling getUserHome()
@@ -27,10 +25,10 @@ func getUserHome() error {
 }
 
 // LoadConfig loads a configuration file from the standard path, defined by "configFilePath"
-func LoadConfig() (config.Configuration, error) {
+func LoadConfig() (Configuration, error) {
 
 	if err := getUserHome(); err != nil {
-		return err
+		return Configuration{}, err
 	}
 
 	f, _ := os.Open(configFilePath)
@@ -41,7 +39,7 @@ func LoadConfig() (config.Configuration, error) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(fReader)
 
-	var m config.Configuration
+	var m Configuration
 	json.Unmarshal(buf.Bytes(), &m)
 
 	//
@@ -51,7 +49,7 @@ func LoadConfig() (config.Configuration, error) {
 	// The first condition is true only if "targets" in the json file is not even defined, so
 	// we'll check for array length too.
 	if m.Targets == nil || len(m.Targets) == 0 {
-		return config.Configuration{}, errors.New("configuration error: no \"targets\" field defined, cannot continue without. Check your configuration file, it's malformed")
+		return Configuration{}, errors.New("configuration error: no \"targets\" field defined, cannot continue without. Check your configuration file, it's malformed")
 	}
 
 	// Assuming from here that our configuration file contains at least one target, we need to correctly
