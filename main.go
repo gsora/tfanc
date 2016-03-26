@@ -37,6 +37,7 @@ func main() {
 	// calm down, golint.
 	cFan.Update()
 	fmt.Println(cFan.Status)
+	fmt.Println(conf.Targets)
 }
 
 func securityChecks() config.Configuration {
