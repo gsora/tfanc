@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/VividCortex/godaemon"
+	"github.com/gsora/tfanc/config"
 	"github.com/gsora/tfanc/tpmodule"
 )
 
@@ -19,13 +20,13 @@ func main() {
 	foreground := flag.Bool("foreground", false, "don't fork in background, useful for debug purposes")
 	flag.Parse()
 
+	conf := securityChecks()
+
 	if *foreground == false && *benchmark == false {
 		godaemon.MakeDaemon(&godaemon.DaemonAttr{})
 	} else if *foreground == false && *benchmark == true {
 		fmt.Println("Cannot fork to background while running in benchmark mode.")
 	}
-
-	securityChecks()
 
 	// if -benchmark passed, run it
 	if *benchmark == true {
@@ -38,7 +39,7 @@ func main() {
 	fmt.Println(cFan.Status)
 }
 
-func securityChecks() {
+func securityChecks() config.Configuration {
 	// check if user running this is root
 	if os.Getuid() != 0 {
 		fmt.Println("This program have to be executed with root rights.")
@@ -49,4 +50,11 @@ func securityChecks() {
 	if err := tpmodule.IsModuleLoaded(); err != nil {
 		log.Fatal(err)
 	}
+
+	conf, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return conf
 }
