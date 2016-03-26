@@ -20,8 +20,13 @@ func main() {
 	foreground := flag.Bool("foreground", false, "don't fork in background, useful for debug purposes")
 	flag.Parse()
 
+	// Make some security checks and (hopefully) return a config.Configuration
 	conf := securityChecks()
 
+	// If the user didn't want to run in benchmark mode, or in foreground mode,
+	// fork into background.
+	//
+	// Otherwise, if he wanted to benchmark, run it.
 	if *foreground == false && *benchmark == false {
 		godaemon.MakeDaemon(&godaemon.DaemonAttr{})
 	} else if *foreground == false && *benchmark == true {
@@ -52,6 +57,7 @@ func securityChecks() config.Configuration {
 		log.Fatal(err)
 	}
 
+	// Load the config file
 	conf, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
