@@ -6,33 +6,21 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"os/user"
 	"sort"
 )
 
 // WARNING: never directly use this variable before calling getUserHome()
-var configFilePath = "/.config/tfanc.json"
-
-func getUserHome() error {
-	cU, err := user.Current()
-	if err != nil {
-		return err
-	}
-
-	configFilePath = cU.HomeDir + configFilePath
-
-	return nil
-}
+var configFilePath = "/etc/tfanc/tfanc.json"
 
 // LoadConfig loads a configuration file from the standard path, defined by "configFilePath"
 func LoadConfig() (Configuration, error) {
 
-	if err := getUserHome(); err != nil {
+	f, err := os.Open(configFilePath)
+	defer f.Close()
+
+	if err != nil {
 		return Configuration{}, err
 	}
-
-	f, _ := os.Open(configFilePath)
-	defer f.Close()
 
 	fReader := bufio.NewReader(f)
 
