@@ -3,6 +3,7 @@ package tpmodule
 import (
 	"bufio"
 	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -51,7 +52,7 @@ func (f *Fan) ToggleFan() {
 		dest := []byte("enable")
 		err := ioutil.WriteFile(fanPath, dest, 0644)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 }
@@ -62,7 +63,7 @@ func (f *Fan) SetLevel(level int) {
 	dest := []byte(l)
 	err := ioutil.WriteFile(fanPath, dest, 0644)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
@@ -71,7 +72,7 @@ func (f *Fan) SetAutoLevel() {
 	dest := []byte("level auto")
 	err := ioutil.WriteFile(fanPath, dest, 0644)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
@@ -80,6 +81,6 @@ func (f *Fan) SetFullSpeedLevel() {
 	dest := []byte("level full-speed")
 	err := ioutil.WriteFile(fanPath, dest, 0644)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
