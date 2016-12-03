@@ -7,15 +7,35 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/gsora/tfanc/config"
 )
 
 var fanPath = "/proc/acpi/ibm/fan"
 
 // Fan struct represents the content of /proc/acpi/ibm/fan at a given time. One need to call its "update" method to populate or update.
 type Fan struct {
-	Status string
-	Speed  int
-	Level  string
+	Status        string
+	Speed         int
+	Level         string
+	Levels        FanLevels
+	CurrentTarget config.Target
+}
+
+type FanLevels struct {
+	Min int
+	Max int
+}
+
+func NewFan() Fan {
+	var f FanLevels
+	f.DetectFanLevels()
+	var r Fan
+	r.Levels = f
+	r.CurrentTarget = config.Target{0, 0}
+	r.Update()
+
+	return r
 }
 
 // Update struct with data from the module
@@ -83,4 +103,18 @@ func (f *Fan) SetFullSpeedLevel() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (fl *FanLevels) DetectFanLevels() {
+	path := "/proc/acpi/ibm/fan"
+	d, err := ioutil.ReadFile(path)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cmds := strings.Split(strings.TrimSpace(string(d)), " ")
+	levels := strings.Split(cmds[4][:len(cmds[4])-1], "-")
+	fl.Min, _ = strconv.Atoi(levels[0])
+	fl.Max, _ = strconv.Atoi(levels[1])
 }
