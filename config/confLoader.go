@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-	"sort"
 )
 
 // WARNING: never directly use this variable before calling getUserHome()
@@ -38,15 +37,6 @@ func LoadConfig() (Configuration, error) {
 	// we'll check for array length too.
 	if m.Targets == nil || len(m.Targets) == 0 {
 		return Configuration{}, errors.New("configuration error: no \"targets\" field defined, cannot continue without. Check your configuration file, it's malformed")
-	}
-
-	// Assuming from here that our configuration file contains at least one target, we need to correctly
-	// parse what the user was thinking when writing the configuration file aka sort all the Targets.Range contents to correctly
-	// represent a range. [0] > [1]
-	for _, target := range m.Targets {
-		if !(target.Range[0] < target.Range[1]) {
-			sort.Ints(target.Range)
-		}
 	}
 
 	// Return everything!
