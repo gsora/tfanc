@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
+	"time"
 
 	"github.com/VividCortex/godaemon"
 	"github.com/gsora/tfanc/config"
@@ -13,6 +15,9 @@ import (
 
 // The fan controller itself
 var cFan tpmodule.Fan
+
+// LastCPUTemp holds the last CPU temp read
+var LastCPUTemp int
 
 func main() {
 	// program parameters
@@ -40,16 +45,48 @@ func main() {
 	}
 
 	// calm down, golint.
-	cFan.Update()
+	cFan := tpmodule.NewFan()
+	fmt.Println(cFan.Levels)
 	fmt.Println(cFan.Status)
 	fmt.Println(conf.Targets)
+	sort.Sort(config.ByRange(conf.Targets))
+	fmt.Println(conf.Targets)
+
+	loop := time.NewTicker(time.Second * 1)
+
+	for _ = range loop.C {
+		fanCycle(cFan, conf)
+	}
+}
+
+/*
+
+fanCycle is the main core of tfanc, it's the algorithm behind level switching.
+
+It will be run inside a time.Ticker loop every second to guarantee an adequate
+level of cooling for every application.
+
+*/
+func fanCycle(fan tpmodule.Fan, conf config.Configuration) {
+	cpuTemp := tpmodule.GetCPUTemp()
+
+	if LastCPUTemp > cpuTemp {
+		if !(fan.CurrentTarget.MinTemp < cpuTemp && fan.CurrentTarget.MinTemp > cpuTemp) {
+			fan.CurrentTarget = conf.NextTarget(fan.CurrentTarget)
+			fan.SetLevel(fan.CurrentTarget.Level)
+		}
+	} else {
+		fan.CurrentTarget = conf.PrevTarget(fan.CurrentTarget)
+		fan.SetLevel(fan.CurrentTarget.Level)
+	}
+
+	LastCPUTemp = cpuTemp
 }
 
 func securityChecks() config.Configuration {
 	// check if user running this is root
 	if os.Getuid() != 0 {
-		fmt.Println("This program have to be executed with root rights.")
-		os.Exit(1)
+		log.Fatal("This program have to be executed with root rights.")
 	}
 
 	// then check if the kernel module is loaded with fan_control=1, else exit
