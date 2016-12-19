@@ -13,7 +13,7 @@ func IsModuleLoaded() error {
 	_, err := ioutil.ReadDir(basePath)
 
 	if err != nil {
-		return errors.New("thinkpad_acpi module not loaded.")
+		return errors.New("thinkpad_acpi module not loaded")
 	}
 
 	fanControlFile, err := ioutil.ReadFile(basePath + "/parameters/fan_control")
