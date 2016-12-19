@@ -19,10 +19,11 @@ func main() {
 	// program parameters
 	benchmark := flag.Bool("benchmark", false, "run all the possible fan levels, 10 seconds at time")
 	foreground := flag.Bool("foreground", false, "don't fork in background, useful for debug purposes")
+	configFile := flag.String("conf", "", "configuration file - optional, will load /etc/tfanc.conf by default")
 	flag.Parse()
 
 	// Make some security checks and (hopefully) return a config.Configuration
-	conf := securityChecks()
+	conf := securityChecks(*configFile)
 
 	// If the user didn't want to run in benchmark mode, or in foreground mode,
 	// fork into background.
@@ -64,7 +65,7 @@ func fanCycle(fan tpmodule.Fan, conf config.Configuration) {
 	fan.SetLevel(fan.CurrentTarget.Level)
 }
 
-func securityChecks() config.Configuration {
+func securityChecks(configFile string) config.Configuration {
 	// check if user running this is root
 	if os.Getuid() != 0 {
 		log.Fatal("This program have to be executed with root rights.")
@@ -75,8 +76,16 @@ func securityChecks() config.Configuration {
 		log.Fatal(err)
 	}
 
+	var conf config.Configuration
+	var err error
+
 	// Load the config file
-	conf, err := config.LoadConfig()
+	if configFile == "" {
+		conf, err = config.LoadConfig(config.ConfigFilePath)
+	} else {
+		conf, err = config.LoadConfig(configFile)
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}

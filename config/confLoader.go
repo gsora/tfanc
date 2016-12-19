@@ -8,13 +8,13 @@ import (
 	"os"
 )
 
-// WARNING: never directly use this variable before calling getUserHome()
-var configFilePath = "/etc/tfanc/tfanc.json"
+// ConfigFilePath holds the default configuration file path
+var ConfigFilePath = "/etc/tfanc.conf"
 
 // LoadConfig loads a configuration file from the standard path, defined by "configFilePath"
-func LoadConfig() (Configuration, error) {
+func LoadConfig(path string) (Configuration, error) {
 
-	f, err := os.Open(configFilePath)
+	f, err := os.Open(path)
 	defer f.Close()
 
 	if err != nil {
