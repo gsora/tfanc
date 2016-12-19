@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sort"
 	"time"
 
 	"github.com/VividCortex/godaemon"
@@ -15,9 +14,6 @@ import (
 
 // The fan controller itself
 var cFan tpmodule.Fan
-
-// LastCPUTemp holds the last CPU temp read
-var LastCPUTemp int
 
 func main() {
 	// program parameters
@@ -44,17 +40,11 @@ func main() {
 		return
 	}
 
-	// calm down, golint.
 	cFan := tpmodule.NewFan()
-	fmt.Println(cFan.Levels)
-	fmt.Println(cFan.Status)
-	fmt.Println(conf.Targets)
-	sort.Sort(config.ByRange(conf.Targets))
-	fmt.Println(conf.Targets)
 
 	loop := time.NewTicker(time.Second * 1)
 
-	for _ = range loop.C {
+	for range loop.C {
 		fanCycle(cFan, conf)
 	}
 }
@@ -70,17 +60,8 @@ level of cooling for every application.
 func fanCycle(fan tpmodule.Fan, conf config.Configuration) {
 	cpuTemp := tpmodule.GetCPUTemp()
 
-	if LastCPUTemp > cpuTemp {
-		if !(fan.CurrentTarget.MinTemp < cpuTemp && fan.CurrentTarget.MinTemp > cpuTemp) {
-			fan.CurrentTarget = conf.NextTarget(fan.CurrentTarget)
-			fan.SetLevel(fan.CurrentTarget.Level)
-		}
-	} else {
-		fan.CurrentTarget = conf.PrevTarget(fan.CurrentTarget)
-		fan.SetLevel(fan.CurrentTarget.Level)
-	}
-
-	LastCPUTemp = cpuTemp
+	fan.CurrentTarget, _ = conf.WhatLevelDoIBelong(cpuTemp)
+	fan.SetLevel(fan.CurrentTarget.Level)
 }
 
 func securityChecks() config.Configuration {
