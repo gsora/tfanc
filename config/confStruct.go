@@ -1,11 +1,13 @@
 package config
 
+import "errors"
+
 // Configuration is a structure holding content of the configuration file
 type Configuration struct {
 	Targets []Target `json:"targets"`
 }
 
-// Targets is a structure holding a range and a level
+// Target is a structure holding a range and a level
 type Target struct {
 	MinTemp int `json:"mintemp"`
 	Level   int `json:"level"`
@@ -29,6 +31,23 @@ func (c *Configuration) PrevTarget(t Target) Target {
 		}
 	}
 	return t
+}
+
+// WhatLevelDoIBelong detects to what level a temp belongs.
+func (c *Configuration) WhatLevelDoIBelong(temp int) (Target, error) {
+	for index, element := range c.Targets {
+		if temp < element.MinTemp {
+			return c.Targets[index-1], nil
+		}
+	}
+
+	if temp > c.Targets[len(c.Targets)-1].MinTemp {
+		return c.Targets[len(c.Targets)-1], nil
+	} else if temp < c.Targets[0].MinTemp {
+		return c.Targets[0], nil
+	}
+
+	return Target{Level: 0, MinTemp: 0}, errors.New("cannot find a target for given temp")
 }
 
 type ByRange []Target
