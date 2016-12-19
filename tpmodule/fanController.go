@@ -13,7 +13,8 @@ import (
 
 var fanPath = "/proc/acpi/ibm/fan"
 
-// Fan struct represents the content of /proc/acpi/ibm/fan at a given time. One need to call its "update" method to populate or update.
+// Fan struct represents the content of /proc/acpi/ibm/fan at a given time.
+//One need to call its "update" method to populate or update.
 type Fan struct {
 	Status        string
 	Speed         int
@@ -22,17 +23,20 @@ type Fan struct {
 	CurrentTarget config.Target
 }
 
+// FanLevels specify what are the minimum and maximum fan levels supported by the ThinkPad where
+// tfanc is running.
 type FanLevels struct {
 	Min int
 	Max int
 }
 
+// NewFan returns a new Fan{}
 func NewFan() Fan {
 	var f FanLevels
 	f.DetectFanLevels()
 	var r Fan
 	r.Levels = f
-	r.CurrentTarget = config.Target{0, 0}
+	r.CurrentTarget = config.Target{MinTemp: 0, Level: 0}
 	r.Update()
 
 	return r
@@ -105,6 +109,8 @@ func (f *Fan) SetFullSpeedLevel() {
 	}
 }
 
+// DetectFanLevels reads from the thinkpad_acpi sysfs what are the supported
+// fan levels of the ThinkPad who's running tfanc.
 func (fl *FanLevels) DetectFanLevels() {
 	path := "/proc/acpi/ibm/fan"
 	d, err := ioutil.ReadFile(path)
